@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
 include('inc/simple_html_dom.php');
 
-$IMDB_id = "tt2861424";
+$IMDB_id = "tt4574334";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
     // Make a Json
@@ -67,32 +67,41 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
     // Add To JSON
     $RawData->description = $description->plaintext;
 
-    
-    // GET CREATOR // TODO / NEEDS IF
-    $creator = $IMDB->find('div.plot_summary  div.credit_summary_item a' , 0);
-    // Add To JSON
-    $RawData->creator = $creator->innertext;
 
+// GET CREATORS AND STARS
+    foreach ($IMDB->find('div.plot_summary  div.credit_summary_item') as $info) {
+        $title = $info->find('h4.inline' , 0)->innertext;
+        if ($title == "Creators:") {
+            $i = 0;
+            foreach ($info->find('a') as $datalink) {
+                $datalink = $datalink->innertext;
+                $RawData->creators[$i] = $datalink;
+                $i++;
+            }
+        }
+          if ($title == "Stars:") {
+            $i = 0;
+            foreach ($info->find('a') as $datalink) {
+                $datalink = $datalink->innertext;
+                $RawData->stars[$i] = $datalink;
+                $i++;
+            }
 
-    // GET Stars // TODO / NEEDS IF
-    $stars = $IMDB->find('div.plot_summary  div.credit_summary_item' , 1);
-    $i = 0;
-    $starsArray = [];
-    foreach ($stars->find('a') as $star) {
-    $star = $star->innertext;
-    array_push($starsArray,$star);
+        }
     }
-    array_pop($starsArray); // REMOVE "See full cast & crew"
-    // Add To JSON
-    $RawData->stars = $starsArray;
+    
+
+
+        // CHECK IF IT'S SERIES OR MOVIE
+        if (strpos($releaseDate,'Series') > 0) {
+            Series();
+        }
 
 
 
-
-
-
-
-
+function Series() {
+    $RawData = $GLOBALS['RawData'];
+    $IMDB = $GLOBALS['IMDB'];
         //
         // SERIES 
         //
@@ -159,7 +168,7 @@ foreach($IMDB->find('div.episode-container') as $bestEpisode) {
 
 
 
-
+}
 
 
 // REMOVE SPACES
