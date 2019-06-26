@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
 include('inc/simple_html_dom.php');
 
-$IMDB_id = "tt4574334";
+$IMDB_id = "tt2911666";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
     // Make a Json
@@ -18,7 +18,20 @@ $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt'
 // GET TITLE
 foreach($IMDB->find('div.title_wrapper h1') as $title) 
     // Add To JSON
+
+    if($title->find('span#titleYear a', 0)) {
+        $year = $title->find('span#titleYear a', 0);
+        $RawData->releaseYear = $year->innertext;
+    }
+
+    if($title->find('span', 0)) {
+        $title->find('span', 0)->outertext = ""; // REMOVE YEAR (2019) AFTER NAME
+    }
+
+
+    
     $RawData->title = $title->innertext;
+
 
 // GET RATING
 foreach($IMDB->find('div.ratingValue strong span') as $rating) 
@@ -71,7 +84,8 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
 // GET CREATORS AND STARS
     foreach ($IMDB->find('div.plot_summary  div.credit_summary_item') as $info) {
         $title = $info->find('h4.inline' , 0)->innertext;
-        if ($title == "Creators:") {
+
+        if ($title == "Creators:" || $title == "Creator:") {
             $i = 0;
             foreach ($info->find('a') as $datalink) {
                 $datalink = $datalink->innertext;
@@ -79,15 +93,37 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
                 $i++;
             }
         }
-          if ($title == "Stars:") {
+
+          if ($title == "Stars:" || $title == "Star:") {
             $i = 0;
             foreach ($info->find('a') as $datalink) {
                 $datalink = $datalink->innertext;
-                $RawData->stars[$i] = $datalink;
+                if ($datalink !== "See full cast & crew") { // REMOVE THIS TEXT FROM LAST OBJECT
+                    $RawData->stars[$i] = $datalink;
+                }
                 $i++;
             }
 
         }
+
+        if ($title == "Writer:" || $title == "Writers:") {
+            $i = 0;
+            foreach ($info->find('a') as $datalink) {
+                $datalink = $datalink->innertext;
+                $RawData->writers[$i] = $datalink;
+                $i++;
+            }
+        }
+
+            if ($title == "Directors:" || $title == "Director:") {
+                $i = 0;
+                foreach ($info->find('a') as $datalink) {
+                    $datalink = $datalink->innertext;
+                    $RawData->directors[$i] = $datalink;
+                    $i++;
+            }
+        }
+
     }
     
 
