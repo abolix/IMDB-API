@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
 include('inc/simple_html_dom.php');
 
-$IMDB_id = "tt2911666";
+$IMDB_id = "tt0773262";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
     // Make a Json
@@ -65,7 +65,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
 
 
     array_pop($categoriesArray); // REMOVE LAST ARRAY ( RELEASE DATE )
-    $RawData->categories = $categoriesArray; // Add Categories To JSON
+    $RawData->mainGenres = $categoriesArray; // Add Categories To JSON
 
 
     // GET POSTER IMAGE
@@ -128,9 +128,88 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
     
 
 
+
+
+
+
+foreach ($IMDB->find('div.see-more.inline.canwrap') as $genres) {
+    if($info->find('h4.inline' , 0)) {
+        $title = $genres->find('h4.inline' , 0)->innertext;
+    }
+    if($title == "Genres:" || $title == "Genre:") {
+        $i = 0;
+        foreach ($genres->find('a') as $datalink) {
+            $datalink = $datalink->innertext;
+            $RawData->allGenres[$i] = $datalink;
+            $i++;
+        }
+    }
+}
+
+
+// GET MANY THINGS
+foreach ($IMDB->find('div.article  div.txt-block') as $info) {
+
+    if($info->find('h4.inline' , 0)) {
+        $title = $info->find('h4.inline' , 0)->innertext;
+    }
+
+
+    // GET COUNTRIES
+    if ($title == "Country:") {
+        $i = 0;
+        foreach ($info->find('a') as $datalink) {
+            $datalink = $datalink->innertext;
+            $RawData->country[$i] = $datalink;
+            $i++;
+        }
+    }
+
+
+    // GET LANGUAGE
+    if ($title == "Language:") {
+        $i = 0;
+        foreach ($info->find('a') as $datalink) {
+            $datalink = $datalink->innertext;
+            $RawData->language[$i] = $datalink;
+            $i++;
+        }
+    }
+
+        // GET OFFICAL SITES
+    if ($title == "Official Sites:") {
+        $i = 0;
+        foreach ($info->find('a') as $datalink) {
+            $datalink = $datalink->innertext;
+            if($datalink !== "See more") {
+                $RawData->officalSites[$i] = $datalink;
+            }
+            $i++;
+            }
+        }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+        // ADD IMDB ID
+        $RawData->IMDB_id = $IMDB_id;
+
         // CHECK IF IT'S SERIES OR MOVIE
         if (strpos($releaseDate,'Series') > 0) {
             Series();
+            $RawData->type = "Series";
+        }else {
+            $RawData->type = "Movie";
         }
 
 
@@ -150,16 +229,14 @@ function Series() {
 
 
 
-    // GET Season COUNT // TODO : JUST GIVE END()
-    $seasonCounts = $IMDB->find('div.seasons-and-year-nav div' , 2);
-    $i = 0;
-    foreach ($seasonCounts->find('a') as $seasonCount) {
+    // GET Season COUNT
+    $seasonCount = $IMDB->find('div.seasons-and-year-nav div' , 2);
+    $seasonCount = $seasonCount->find('a', 0);
         $seasonCount = $seasonCount->innertext;
-        $RawData->seasonCount[$i] = $seasonCount;
-        $i++;
-    }
+        $RawData->seasonCount = $seasonCount;
+    
 
-
+    /* TODO : SEE ALL PROBLEM
     // GET EPISODE COUNT ( ALL SEASONS )
     $seasonYears = $IMDB->find('div.seasons-and-year-nav div' , 3);
     $i = 0;
@@ -168,7 +245,7 @@ function Series() {
         $RawData->seasonYear[$i] = $seasonYear;
         $i++;
     }
-
+    */
 
 
     
