@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
 include('inc/simple_html_dom.php');
 
-$IMDB_id = "tt0773262";
+$IMDB_id = "tt0468569";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
     // MAKE A JSON VARIABLE TO PUT DATA ON IT AND JSON ENCODE IT AT END
@@ -190,6 +190,17 @@ foreach ($IMDB->find('div.article  div.txt-block') as $info) {
 }
 
 
+        // AWARDS AND WINS
+        $i = 0;
+        if($IMDB->find('div#titleAwardsRanks',0)) {
+            $awards = $IMDB->find('div#titleAwardsRanks',0);
+            foreach($awards->find('span.awards-blurb') as $award) {
+                $RawData->awards[$i] = $award->plaintext;
+                $i++;
+            }
+        }
+
+
 
         // ADD IMDB ID
         $RawData->IMDB_id = $IMDB_id;
@@ -272,10 +283,16 @@ foreach($IMDB->find('div.episode-container') as $bestEpisode) {
 
 
 // REMOVE SPACES
-$RawData->title = str_replace("  ","","$RawData->title");
-$RawData->timeAverage = str_replace(" ","","$RawData->timeAverage");
-$RawData->description = str_replace("  ","","$RawData->description");
+$RawData->title = str_replace("  ","",$RawData->title);
+$RawData->timeAverage = str_replace(" ","",$RawData->timeAverage);
+$RawData->description = str_replace("  ","",$RawData->description);
+$RawData->awards[1] = str_replace("  ","",$RawData->awards[1]);
 
+$i = 0;
+foreach ($RawData->awards as $award) {
+    $RawData->awards[$i] = str_replace("  ","",$RawData->awards[$i]);
+    $i++;
+}
 
 // ENCODE TO JSON
 $EncodedData = json_encode($RawData , JSON_PRETTY_PRINT);
