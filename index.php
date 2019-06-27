@@ -7,7 +7,7 @@ header('Content-Type: application/json');
 // MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
 include('inc/simple_html_dom.php');
 
-$IMDB_id = "tt0468569";
+$IMDB_id = "tt5491994";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
     // MAKE A JSON VARIABLE TO PUT DATA ON IT AND JSON ENCODE IT AT END
@@ -19,12 +19,11 @@ $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt'
 foreach($IMDB->find('div.title_wrapper h1') as $title) 
     // Add To JSON
 
-    if($title->find('span#titleYear a', 0)) {
-        $year = $title->find('span#titleYear a', 0);
+    if($year = $title->find('span#titleYear a', 0)) {
         $RawData->releaseYear = $year->innertext;
     }
 
-    if($title->find('span', 0)) {
+    if($title->find('span', 0)) { 
         $title->find('span', 0)->outertext = ""; // REMOVE YEAR (2019) AFTER NAME
     }
 
@@ -45,9 +44,11 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
 
 
     // GET TIME AVERAGE LENGTH OF MOVIE / SERIES
-    $time = $IMDB->find('div.title_wrapper div.subtext time' , 0);
+    if($time = $IMDB->find('div.title_wrapper div.subtext time' , 0)){
     // Add To JSON
     $RawData->timeAverage = $time->innertext;
+    }
+
 
 
     //GET CATEGORIES
@@ -132,8 +133,8 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
 
 // GET ALL GENRES
 foreach ($IMDB->find('div.see-more.inline.canwrap') as $genres) {
-    if($info->find('h4.inline' , 0)) {
-        $title = $genres->find('h4.inline' , 0)->innertext;
+    if($title = $genres->find('h4.inline' , 0)) {
+        $title = $title->innertext;
     }
     if($title == "Genres:" || $title == "Genre:") {
         $i = 0;
@@ -149,8 +150,8 @@ foreach ($IMDB->find('div.see-more.inline.canwrap') as $genres) {
 // GET MANY THINGS
 foreach ($IMDB->find('div.article  div.txt-block') as $info) {
 
-    if($info->find('h4.inline' , 0)) {
-        $title = $info->find('h4.inline' , 0)->innertext;
+    if($title = $info->find('h4.inline' , 0)) {
+        $title = $title->innertext;
     }
 
 
@@ -192,14 +193,19 @@ foreach ($IMDB->find('div.article  div.txt-block') as $info) {
 
         // AWARDS AND WINS
         $i = 0;
-        if($IMDB->find('div#titleAwardsRanks',0)) {
-            $awards = $IMDB->find('div#titleAwardsRanks',0);
+        if($awards = $IMDB->find('div#titleAwardsRanks',0)) {
             foreach($awards->find('span.awards-blurb') as $award) {
                 $RawData->awards[$i] = $award->plaintext;
                 $i++;
             }
         }
 
+
+        // GET METASCORE
+        $i = 0;
+        if($metaScore = $IMDB->find('div.titleReviewBarItem div.metacriticScore span',0)) { // CHECK IF THERE IS METASCORE IN IMDB PAGE
+            $RawData->metaScore = $metaScore->innertext;
+        }
 
 
         // ADD IMDB ID
@@ -284,14 +290,18 @@ foreach($IMDB->find('div.episode-container') as $bestEpisode) {
 
 // REMOVE SPACES
 $RawData->title = str_replace("  ","",$RawData->title);
-$RawData->timeAverage = str_replace(" ","",$RawData->timeAverage);
-$RawData->description = str_replace("  ","",$RawData->description);
-$RawData->awards[1] = str_replace("  ","",$RawData->awards[1]);
+if(isset($RawData->timeAverage)) {
+    $RawData->timeAverage = str_replace(" ","",$RawData->timeAverage);
+}
 
+$RawData->description = str_replace("  ","",$RawData->description);
+
+if(isset($RawData->awards)) {
 $i = 0;
 foreach ($RawData->awards as $award) {
     $RawData->awards[$i] = str_replace("  ","",$RawData->awards[$i]);
     $i++;
+}
 }
 
 // ENCODE TO JSON
