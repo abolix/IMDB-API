@@ -10,7 +10,7 @@ include('inc/simple_html_dom.php');
 $IMDB_id = "tt0773262";
 $IMDB = file_get_html('https://www.imdb.com/title/'.$IMDB_id.'/?ref_=ttep_ep_tt');
 
-    // Make a Json
+    // MAKE A JSON VARIABLE TO PUT DATA ON IT AND JSON ENCODE IT AT END
     $RawData = new \stdClass();
 
 
@@ -85,6 +85,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
     foreach ($IMDB->find('div.plot_summary  div.credit_summary_item') as $info) {
         $title = $info->find('h4.inline' , 0)->innertext;
 
+        // GET CREATORS
         if ($title == "Creators:" || $title == "Creator:") {
             $i = 0;
             foreach ($info->find('a') as $datalink) {
@@ -93,7 +94,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
                 $i++;
             }
         }
-
+            // GET STARS
           if ($title == "Stars:" || $title == "Star:") {
             $i = 0;
             foreach ($info->find('a') as $datalink) {
@@ -105,7 +106,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
             }
 
         }
-
+        // GET WRITER
         if ($title == "Writer:" || $title == "Writers:") {
             $i = 0;
             foreach ($info->find('a') as $datalink) {
@@ -114,7 +115,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
                 $i++;
             }
         }
-
+            // GET DIRECTOR 
             if ($title == "Directors:" || $title == "Director:") {
                 $i = 0;
                 foreach ($info->find('a') as $datalink) {
@@ -129,9 +130,7 @@ foreach($IMDB->find('div.imdbRating a span.small') as $ratingCount)
 
 
 
-
-
-
+// GET ALL GENRES
 foreach ($IMDB->find('div.see-more.inline.canwrap') as $genres) {
     if($info->find('h4.inline' , 0)) {
         $title = $genres->find('h4.inline' , 0)->innertext;
@@ -192,15 +191,6 @@ foreach ($IMDB->find('div.article  div.txt-block') as $info) {
 
 
 
-
-
-
-
-
-
-
-
-
         // ADD IMDB ID
         $RawData->IMDB_id = $IMDB_id;
 
@@ -211,6 +201,8 @@ foreach ($IMDB->find('div.article  div.txt-block') as $info) {
         }else {
             $RawData->type = "Movie";
         }
+
+
 
 
 
@@ -236,7 +228,7 @@ function Series() {
         $RawData->seasonCount = $seasonCount;
     
 
-    /* TODO : SEE ALL PROBLEM
+    /* TODO : "SEE ALL" PROBLEM
     // GET EPISODE COUNT ( ALL SEASONS )
     $seasonYears = $IMDB->find('div.seasons-and-year-nav div' , 3);
     $i = 0;
@@ -248,9 +240,6 @@ function Series() {
     */
 
 
-    
-
-// TODO [IF ITS SERIES]
 // GET BEST EPISODE
 $i = 0;
 foreach($IMDB->find('div.episode-container') as $bestEpisode) {
@@ -275,13 +264,11 @@ foreach($IMDB->find('div.episode-container') as $bestEpisode) {
         $RawData->bestEpisode[$i]->rate = $bestEpisodeRating->innertext;
         $i++;
 
-}
+} 
 
 
 
-
-
-}
+} // END OF SERIES
 
 
 // REMOVE SPACES
