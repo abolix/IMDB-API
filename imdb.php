@@ -1,16 +1,15 @@
 
 <?php
-// JSON CONTENT TYPE
+// Json Content Type
 header('Content-Type: application/json');
 
-// INCLUDE SIMPLE HTML DOM
-// MORE INFO : https://simplehtmldom.sourceforge.io/manual.htm
-include('inc/simple_html_dom.php');
+// Using Simple HTML DOM
+// More info : https://simplehtmldom.sourceforge.io/manual.htm
+include ___DIR__ . '/inc/simple_html_dom.php';
 
-$IMDB_id = 'tt4158110';
+$IMDB_id = 'tt4158110'; // Example (tt4158110) >> Mr. Robot
 $IMDB = file_get_html('https://www.imdb.com/title/' . $IMDB_id . '/?ref_=ttep_ep_tt');
 
-// MAKE A JSON VARIABLE TO PUT DATA ON IT AND JSON ENCODE IT AT END
 $RawData = new stdClass();
 
 
@@ -29,10 +28,7 @@ if ($title->find('span', 0)) {
     $title->find('span', 0)->outertext = ""; // REMOVE YEAR (2019) AFTER NAME
 }
 
-
-
 $RawData->title = $title->innertext;
-
 
 // GET RATING
 foreach ($IMDB->find('div.ratingValue strong span') as $rating)
@@ -228,8 +224,7 @@ function Series()
 
 
     // GET BEST EPISODE
-    $i = 0;
-    foreach ($IMDB->find('div.episode-container') as $bestEpisode) {
+    foreach ($IMDB->find('div.episode-container') as $i => $bestEpisode) {
         $RawData->bestEpisode[$i] = new stdClass();
 
         // GET BEST EPISODE NUMBER
@@ -249,7 +244,6 @@ function Series()
         $RawData->bestEpisode[$i]->name = $bestEpisodeName->innertext;
         $RawData->bestEpisode[$i]->description = $bestEpisodeDescription->next_sibling()->innertext;
         $RawData->bestEpisode[$i]->rate = $bestEpisodeRating->innertext;
-        $i++;
     }
 } // END OF SERIES
 
@@ -263,14 +257,12 @@ if (isset($RawData->timeAverage)) {
 $RawData->description = str_replace("  ", "", $RawData->description);
 
 if (isset($RawData->awards)) {
-    $i = 0;
-    foreach ($RawData->awards as $award) {
+    foreach ($RawData->awards as $i => $award) {
         $RawData->awards[$i] = str_replace("  ", "", $RawData->awards[$i]);
-        $i++;
     }
 }
 
 // ENCODE TO JSON
-$EncodedData = json_encode($RawData, JSON_PRETTY_PRINT);
-echo $EncodedData;
+$Result = json_encode($RawData, JSON_PRETTY_PRINT);
+echo $Result;
 ?>
