@@ -5,7 +5,7 @@ header('Content-Type: application/json');
 
 // Using Simple HTML DOM
 // More info : https://simplehtmldom.sourceforge.io/manual.htm
-include ___DIR__ . '/inc/simple_html_dom.php';
+include __DIR__ . '/inc/simple_html_dom.php';
 
 $IMDB_id = 'tt4158110'; // Example (tt4158110) >> Mr. Robot
 $IMDB = file_get_html('https://www.imdb.com/title/' . $IMDB_id . '/?ref_=ttep_ep_tt');
